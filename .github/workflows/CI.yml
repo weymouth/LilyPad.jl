@@ -22,12 +22,5 @@ jobs:
         with:
           version: ${{ matrix.version }}
       - uses: julia-actions/cache@v2
-      - name: Instantiate
-        shell: julia --color=yes --project=. {0}
-        run: |
-          using Pkg
-          Pkg.instantiate()
-      - name: Run tests
-        shell: julia --color=yes --project=. {0}
-        run: |
-          include("run_tests.jl")
+      - uses: julia-actions/julia-buildpkg@v1
+      - uses: julia-actions/julia-runtest@v1

@@ -1,0 +1,16 @@
+LocalPreferences.toml
+Manifest.toml
+run_tests.jl 
+
+# Julia scratch and local state
+*.jl.cov
+*.jl.*.cov
+*.jl.mem
+deps/build.log
+
+# Benchmark / profiling scratch outputs
+*.log
+*_summary.txt
+
+# Exploratory generated assets
+assets/*_interp.png

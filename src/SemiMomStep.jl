@@ -28,11 +28,12 @@ end
     correct_advect!(flow, dt)
 
 Overwrite `flow.f` with the semi-Lagrangian advection of `u⁰-0.5dt*μ₀*∇p` under the action of
-the mean velocity field `(u*+u⁰)/2`.
+the old and predicted velocity fields. The 0.5-weighted pressure gradient term at x⁰ is complemented
+by the same weighting of the pressure gradient at x after projection, completing the second-order correction.
 """
 function correct_advect!(flow::Flow{D,T}, dt) where {D,T}
     flow.f .= flow.u⁰
-    flow.u .= (flow.u .+ flow.u⁰) ./ 2
+    flow.u .= (flow.u .+ flow.u⁰) ./ 2 # average velocity for RK2 departure point calculation
     for i in 1:D
         @loop flow.σ[I] = flow.u⁰[I,i] over I ∈ CartesianIndices(flow.σ)
         @loop flow.σ[I] -= (dt / 2) * flow.μ₀[I, i] * ∂(i, I, flow.p) over I ∈ inside(flow.σ)

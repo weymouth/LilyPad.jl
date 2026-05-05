@@ -3,13 +3,12 @@
 LilyPad.jl is a semi-Lagrangian momentum-step variant of WaterLily.jl.
 
 The API is intentionally the same at the simulation level, so users can switch
-between WaterLily's default `mom_step!` and LilyPad's `semi_mom_step!` by
-changing the constructor only.
+the method by changing the constructor only.
 
 ## Method Difference
 
-- WaterLily: uses `Simulation(...)` and `mom_step!` (flux-form convective step)
-- LilyPad: uses `LilyPadSim(...)` and `semi_mom_step!` (semi-Lagrangian predictor/corrector)
+- WaterLily: uses `Simulation(...)` (flux-form convective step)
+- LilyPad: uses `LilyPadSim(...)` (semi-Lagrangian predictor/corrector, fixed timestep)
 
 Everything else (`sim_step!`, `sim_time`, field access, measurement utilities)
 stays the same.
@@ -29,9 +28,7 @@ function circle_lp(n, m; U=1)
     LilyPadSim((n, m),   # domain size
                (U, 0),   # domain velocity (& velocity scale)
                2radius;  # length scale
-               ν=0,
-               body=AutoBody(sdf),
-               fixed_dt=1.5)  # legacy LilyPad circle-step setting
+               ν=0,body=AutoBody(sdf))
 end
 
 lp = circle_lp(3 * 2^5, 2^6)
@@ -71,8 +68,7 @@ mean lift is near zero.
 - `lift_std_err  = -0.0170` (~1.7% larger lift oscillation amplitude)
 
 Current circle example uses an inviscid-to-inviscid comparison (`ν=0` in both
-simulations) and the legacy-style constant timestep path (`fixed_dt=1.5`) for
-LilyPad.
+simulations) and a constant timestep (`Δt=1.5`) for LilyPad.
 
 ## Quick Switching Pattern
 
@@ -98,6 +94,6 @@ This package is still under development.
 
 - Validated in 2D and 3D on SIMD, CPU, and GPU.
 - No explicit viscous damping has been added yet.
-- The time-stepping defaults at `dt = 1.5`, but an adaptive scheme that takes advantage of SL-integration stability would be better.
+- The time-stepping defaults at `Δt = 1.5`, but an adaptive scheme that takes advantage of SL-integration stability would be better.
 
 For method details and development notes, see `CLAUDE.md`.

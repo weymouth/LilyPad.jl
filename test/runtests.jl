@@ -3,13 +3,12 @@ using WaterLily
 using Test
 using StaticArrays
 
-check_compiler(compiler, parse_str) = try occursin(parse_str, read(`$compiler --version`, String)) catch _ false end
-_cuda = check_compiler("nvcc", "release")
-_cuda && using CUDA
+_cuda = try (@eval using CUDA; CUDA.functional()) catch _ false end
 
 function setup_backends()
     arrays = [Array]
-    _cuda && CUDA.functional() && push!(arrays, CUDA.CuArray)
+    _cuda && push!(arrays, CUDA.CuArray)
+    @show arrays
     return arrays
 end
 

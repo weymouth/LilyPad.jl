@@ -15,7 +15,7 @@ function circle_lp(n, m; U=1)
     LilyPadSim((n, m), (U, 0), 2radius;
                ν=0,
                body=AutoBody(sdf),
-               fixed_dt=1.5)
+               Δt=1.5)
 end
 
 n, m = 3 * 2^5, 2^6
@@ -25,7 +25,7 @@ out_dir = joinpath(@__DIR__, "..", "assets")
 mkpath(out_dir)
 
 println("WL startup dt = ", wl.flow.Δt[end])
-println("LP fixed_dt = 1.5")
+println("LP fixed_dt = ", lp.flow.Δt[end])
 
 # One full step for field snapshots
 sim_step!(wl)

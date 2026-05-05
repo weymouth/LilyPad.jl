@@ -1,4 +1,4 @@
-import LilyPad: scalar_advect!, semi_mom_step!, sim_step!, quad
+import LilyPad: scalar_advect!, sim_step!, quad, LilyFlow
 
 @testset "util.jl" begin
     T = Float32
@@ -60,10 +60,10 @@ end
         end
 
         # 2) Nontrivial field transported along lower boundary for i=1.
-        p(x, y) = T(0.3) * x^2 + T(0.2) * y^2 + T(0.15) * x * y + T(0.4) * x - T(0.7) * y + T(1.2)
+        p(x, y) = 0.3f0 * x^2 + 0.2f0 * y^2 + 0.15f0 * x * y + 0.4f0 * x - 0.7f0 * y + 1.2f0
         Nb = 20
         u_along = zeros(T, Nb + 2, Nb + 2, D) |> f
-        apply!((i, x) -> i == 1 ? T(1) : T(0), u_along)
+        apply!((i, x) -> i == 1 ? 1f0 : 0f0, u_along)
         src_along = zeros(T, Nb + 2, Nb + 2, D) |> f
         apply!((i, x) -> p(x[1], x[2]), src_along)
         adv_along = zeros(T, Nb + 2, Nb + 2) |> f
@@ -77,7 +77,7 @@ end
 
         # 3) Nontrivial field transported toward lower boundary for i=1.
         u_cross = zeros(T, Nb + 2, Nb + 2, D) |> f
-        apply!((i, x) -> i == 2 ? T(-1) : T(0), u_cross)
+        apply!((i, x) -> i == 2 ? -1f0 : 0f0, u_cross)
         src_cross = zeros(T, Nb + 2, Nb + 2, D) |> f
         apply!((i, x) -> p(x[1], x[2]), src_cross)
         adv_cross = zeros(T, Nb + 2, Nb + 2) |> f
@@ -91,15 +91,15 @@ end
     end
 end
 
-@testset "SemiMomStep.jl" begin
+@testset "LilyFlow.jl" begin
     U = (2f0 / 3, -1f0 / 3)
     N = (2^4, 2^4)
 
     for f in arrays
-        flow = Flow(N, U; f, T=Float32)
+        flow = LilyFlow(N, U; f, T=Float32)
         pois = MultiLevelPoisson(flow.p, flow.μ₀, flow.σ)
 
-        semi_mom_step!(flow, pois)
+        WaterLily.mom_step!(flow, pois)
 
         # Uniform flow should stay close to a fixed point after one full step.
         @test L₂(flow.u[:, :, 1] .- U[1]) < 2f-5
@@ -108,15 +108,11 @@ end
         # Projection should keep interior divergence small.
         @inside flow.σ[I] = WaterLily.div(I, flow.u)
         @test maximum(abs.(Array(flow.σ)[inside(flow.p)])) < 1f-3
-    end
 
-    for f in arrays
-        flow = Flow(N, U; f, T=Float32, Δt=0.1f0)
-        pois = MultiLevelPoisson(flow.p, flow.μ₀, flow.σ)
-
-        semi_mom_step!(flow, pois; step_dt=0.5f0, update_cfl=false)
-        @test flow.Δt[end - 1] == 0.5f0
-        @test flow.Δt[end] == 0.5f0
+        # Second step: velocity must stay near U.
+        WaterLily.mom_step!(flow, pois)
+        @test L₂(flow.u[:, :, 1] .- U[1]) < 2f-5
+        @test L₂(flow.u[:, :, 2] .- U[2]) < 1f-5
     end
 end
 
@@ -126,8 +122,8 @@ end
     L = N[1]
 
     for f in arrays
-        sim = LilyPadSim(N, U, L; T=Float32, mem=f)
-        ref = Simulation(N, U, L; T=Float32, mem=f)
+        sim = LilyPadSim(N, U, L; Δt=0.25, T=Float32, mem=f)
+        ref = Simulation(N, U, L; Δt=0.25, T=Float32, mem=f)
 
         @test sim_time(sim) == 0
 
@@ -138,14 +134,12 @@ end
         @test length(sim.flow.Δt) == 2
         @test L₂(sim.flow.u[:, :, 1] .- ref.flow.u[:, :, 1]) < 1f-4
         @test L₂(sim.flow.u[:, :, 2] .- ref.flow.u[:, :, 2]) < 1f-4
+
+        # Second step: LP must stay close to WL.
+        sim_step!(sim)
+        sim_step!(ref)
+        @test L₂(sim.flow.u[:, :, 1] .- ref.flow.u[:, :, 1]) < 1f-3
+        @test L₂(sim.flow.u[:, :, 2] .- ref.flow.u[:, :, 2]) < 1f-3
     end
 
-    for f in arrays
-        sim_fix = LilyPadSim(N, U, L; T=Float32, mem=f, fixed_dt=1.5f0)
-        sim_step!(sim_fix)
-        sim_step!(sim_fix)
-        @test sim_fix.fixed_dt == 1.5
-        @test sim_fix.flow.Δt[end - 1] == 1.5f0
-        @test sim_fix.flow.Δt[end] == 1.5f0
-    end
 end

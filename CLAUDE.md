@@ -92,10 +92,10 @@ not yet been validated against the legacy reference.
 - **Advection interpolation reduction landed**: corrector now reuses the averaged velocity in `flow.u`, reducing total vector-interp calls from 6 to 4 per advected point (predictor 2 + corrector 2 instead of predictor 2 + corrector 4).
 - **README path simplified**: `examples/readme_circle_compare.jl` is the canonical example and emits one-step velocity + long-run force trace figures.
 - **Current force status (inviscid comparison, LP `fixed_dt=1.5`, metrics over t=25–50)**:
-	- lift mean absolute error (`mean(WL) - mean(LP)`): `-0.1031` (expected mean lift is near zero; do not use relative error)
-	- drag mean relative error (`1 - mean(LP)/mean(WL)`): `0.2472` (~25% lower mean drag in LP)
-	- drag std  relative error (`1 - std(LP)/std(WL)`):  `-0.0378` (~3.8% larger LP amplitude)
-	- lift std  relative error (`1 - std(LP)/std(WL)`):  `-0.0170` (~1.7% larger LP amplitude)
+	- lift mean absolute error (`mean(WL) - mean(LP)`): `-0.093` (expected mean lift is near zero; do not use relative error)
+	- drag mean relative error (`1 - mean(LP)/mean(WL)`): `0.244` (~25% lower mean drag in LP)
+	- drag std  relative error (`1 - std(LP)/std(WL)`):  `-0.048` (larger LP amplitude)
+	- lift std  relative error (`1 - std(LP)/std(WL)`):  `-0.036` (larger LP amplitude)
 - **3D GPU profiling status (inviscid, synchronized timing)**:
 	- `fixed_dt=1.5`: `sec/(tU/L) = 0.323629`; advection share `0.610`; projection share `0.324`.
 	- `fixed_dt=2.5`: `sec/(tU/L) = 0.181698`; advection share `0.586`; projection share `0.348`.

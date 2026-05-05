@@ -1,4 +1,4 @@
-import WaterLily: BC!, project!, CFL, exitBC!, @loop, inside_u, inside, ∂, loc, μddn
+import WaterLily: BC!, mom_project!, CFL, exitBC!, @loop, inside_u, inside, ∂, loc, μddn
 
 """
     BDIM!(flow)
@@ -64,15 +64,14 @@ to append the same `step_dt` to `flow.Δt` (legacy fixed-`dt` mode).
     BDIM!(flow)
     BC!(flow.u, flow.uBC, flow.exitBC, flow.perdir, t₁)
     flow.exitBC && exitBC!(flow.u, flow.u⁰, dt)
-    project!(flow, pois)
-    BC!(flow.u, flow.uBC, flow.exitBC, flow.perdir, t₁)
+    mom_project!(flow, pois, 1, t₁)
 
     # --- Corrector ---
     @log "c"
     correct_advect!(flow, dt)
     BDIM!(flow)
     BC!(flow.u, flow.uBC, flow.exitBC, flow.perdir, t₁)
-    project!(flow, pois, 0.5)
+    mom_project!(flow, pois, 0.5, t₁)
     BC!(flow.u, flow.uBC, flow.exitBC, flow.perdir, t₁)
 
     push!(flow.Δt, update_cfl ? CFL(flow) : dt)

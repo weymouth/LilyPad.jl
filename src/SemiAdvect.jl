@@ -7,7 +7,7 @@ Characteristic backtrack for the departure point using RK2 [or Crank-Nicolson]
 """
 @inline function departure(x, u, dt) 
     xm = x - dt/2 * interp(x, u)
-    return x - dt/2 * interp(xm, u)
+    return x - dt * interp(xm, u)
 end
 @inline function departure(x, u⁰, u, dt) 
     dx =  -dt * interp(x, u)

@@ -21,8 +21,15 @@ LilyPadSim(dims, uBC, L; Δt=1.5, kwargs...) =
         flow_ctor=(dims, uBC; kw...) -> LilyFlow(dims, uBC; kw...),
         Δt, kwargs...)
 
-export LilyPadSim, LilyFlow
+export LilyPadSim, LilyBiotSim, LilyFlow
 # Re-export WaterLily interface so users only need `using LilyPad`
 export sim_step!, sim_time, measure!
+
+"""
+    LilyBiotSim(...)
+
+Available when `BiotSavartBCs` is loaded. See `LilyPadBiotExt` for full docstring.
+"""
+function LilyBiotSim end
 
 end # module LilyPad

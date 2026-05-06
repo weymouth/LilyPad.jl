@@ -3,9 +3,8 @@ import WaterLily: BC!, exitBC!, @loop, inside_u, inside, ∂, μddn
 """
     LilyFlow{D,T,...} <: WaterLily.AbstractFlow{D,T}
 
-Thin wrapper around `WaterLily.Flow` that overrides `mom_predict!` and
-`mom_correct!` with semi-Lagrangian advection phases. All field access
-forwards to the wrapped `Flow`.
+Thin wrapper around `WaterLily.Flow` that overrides `mom_predict!`, `mom_correct!` 
+`BDIM!` and `CFL` with semi-Lagrangian advection functions.
 """
 struct LilyFlow{D, T, Sf<:AbstractArray{T}, Vf<:AbstractArray{T}, Tf<:AbstractArray{T}} <: AbstractFlow{D,T}
     flow :: Flow{D,T,Sf,Vf,Tf}
@@ -19,8 +18,7 @@ Base.setproperty!(a::LilyFlow, name::Symbol, x) =
 
 """    mom_predict!(a::LilyFlow, t₀, t₁)
 
-Semi-Lagrangian predictor: overwrite `a.f` with `u⁰` self-advected under
-`u⁰`, apply BDIM blending, and enforce BCs at `t₁`.
+Semi-Lagrangian predictor: self-advect `u⁰`, apply BDIM blending, and enforce BCs at `t₁`.
 """
 function WaterLily.mom_predict!(a::LilyFlow{D}, t₀, t₁; kwargs...) where D
     a.f .= a.u⁰; dt = t₁ - t₀
@@ -34,9 +32,7 @@ end
 """    mom_correct!(a::LilyFlow, t)
 
 Semi-Lagrangian corrector: advect `u⁰ - 0.5*dt*μ₀*∇p` under the averaged
-velocity `0.5*(u⁰+u_pred)` (built-in trapezoidal departure), apply BDIM
-blending, and enforce BCs at `t`. The corrected velocity is stored directly
-in `a.u` — no explicit velocity averaging is applied afterward.
+velocity `0.5*(u⁰+u_pred)`, apply BDIM blending, and enforce BCs at `t`.
 """
 function WaterLily.mom_correct!(a::LilyFlow{D}, t; kwargs...) where D
     a.f .= a.u⁰; dt = a.Δt[end]
@@ -52,15 +48,14 @@ end
 """
     CFL(a::LilyFlow)
 
-Return the current timestep `a.Δt[end]`, keeping the semi-Lagrangian step size fixed.
+Semi-Lagrangian step size is unlimited, so return the current timestep `a.Δt[end]`.
 """
 WaterLily.CFL(a::LilyFlow; kwargs...) = a.Δt[end]
 
 """
     BDIM!(a::LilyFlow)
 
-Apply BDIM blending. `a.f` must already hold the absolute advected
-velocity field (not an increment); `a.V` is subtracted before blending.
+Semi-Lagrangian BDIM blending on the advected velocity field.
 """
 function BDIM!(a::LilyFlow)
     @loop a.f[Ii] -= a.V[Ii] over Ii ∈ CartesianIndices(a.f)

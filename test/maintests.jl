@@ -95,8 +95,8 @@ end
     U = (2f0 / 3, -1f0 / 3)
     N = (2^4, 2^4)
 
-    for f in arrays
-        flow = LilyFlow(N, U; f, T=Float32)
+    for mem in arrays
+        flow = LilyFlow(N, U; mem, T=Float32)
         pois = MultiLevelPoisson(flow.p, flow.μ₀, flow.σ)
 
         WaterLily.mom_step!(flow, pois)

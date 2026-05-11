@@ -102,6 +102,6 @@ Test suite runs on `Array` and `CuArray` backends. CUDA is an optional test depe
 ## Active Work
 1. ✅ Refactored to WL `Flow-refactor` branch: `LilyFlow <: AbstractFlow{D,T}` thin wrapper, `LilyPadSim` constructor alias, `SemiMomStep.jl` deleted, `fixed_dt` removed.
 2. ✅ GPU tests enabled: CUDA added as optional test dependency; closures in tests use `f0` literals to be GPU-compatible; `Pkg.test()` runs on both `Array` and `CuArray`.
-3. Ensure working interoperability with BiotSavartBCs.jl capability for "unbounded" simulations.
+3. ✅ Ensure working interoperability with BiotSavartBCs.jl capability for "unbounded" simulations.
 4. Add viscous diffusion term with primary consideration on the time-step stability vs simulation speed for intermediate and high Re cases (>1k). Update WL vs LP benchmarks.
-5. Develop real-time interactive 2D fluid simulation and vizualization example using ParticleViz and PixelBodies.
+5. ✅ Develop real-time interactive 2D fluid simulation and vizualization example using ParticleViz and PixelBodies.
